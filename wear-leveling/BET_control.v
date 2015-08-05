@@ -25,6 +25,8 @@ output [11:0] block_out, garbage_addr;
 reg [11:0] f_index;
 reg [31:0] e_cnt, f_cnt;
 
+assign ram_addr = f_index;
+
 always@(posedge clk or negedge rst) begin
 		if(rst ==1'b0) begin
 				ram_addr <= 12'd0;
@@ -38,13 +40,16 @@ always@(posedge clk or negedge rst) begin
                 f_index <= 12'd0;
                 // reset all flags
             end 
-            // find clean block
-            // ...
 
             if(f_index_flag ==1'b0) begin// need to read ram
                 garbage_en <= 1'b0;
                 garbage_addr <= f_index;
                 f_index <= f_index + 12'd1;
+            end else begin
+                // find clean block
+                f_index <= f_index + 12'd1;
+                // read ram
+                f_index_flag <= ram_r;
             end
         end
     end
