@@ -11,7 +11,7 @@ module level_one (
 	// controler ports
 	input clock_100,
 	input rst,
-	input wire [0:cmd_width_short] cmd,
+	input wire [7:0] cmd,
 	output rb1_ctrl,
 	output rb2_ctrl,
 	input ce,

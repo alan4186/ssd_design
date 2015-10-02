@@ -1,2 +1,2 @@
 # ssd_design
-an attempt to implement a band flash controller for a SSD
+an attempt to implement a nand flash controller for a SSD
