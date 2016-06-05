@@ -17,6 +17,7 @@ module flash_ctrl(
   output ack_mode_read, // the read request signal for show ahead fifo with flash mode commands
   output req_core_data, // read request signal to data fifo
   output output_dval, // signal to indicate flash_q should be latched
+  output 
   // flash control signals
   output oCE_N,
   output oCLE,
@@ -75,8 +76,9 @@ parameter IDLEDATA = 8'haa; // 8'b10101010
 assign flash_mode // = instruction[????];
 assign repeat_counter // = instruction[????];
 
-// control ack_mode_read based on the repeat counter
-assign ack_mode_read = (c == `countWidth'd0) ? mode_done : 1'd0;
+// control ack_mode_read based on the repeat counter and the flash's R/B_n
+// signal
+assign ack_mode_read =( iRB_n && (c == `countWidth'd0) ) ? mode_done : 1'd0;
 
 
 
@@ -172,10 +174,10 @@ always@(posedge clk or negedge rst) begin
     oALE <= 1'b0;
     oWE_N <= 1'b1;
     oRE_N <= 1'b1;
-    oWP_N <= // either or?
-    // <= iRB_N;
-    <= flash_q; IDLEDATA;
-    // flash_data <=
+    oWP_N <= 1'b1; // CMOS HIGH (Vccq), see datasheet
+     <= iRB_N;
+    // <= flash_q;
+    flash_data <= IDLEDATA
     data_oe <= 1'b0; 
     mode_done <= 1'b0;
     req_core_data <= 1'b0;
@@ -188,12 +190,10 @@ always@(posedge clk or negedge rst) begin
         oALE <= 1'b0; // dont care
         oWE_N <= 1'b1; // dont care
         oRE_N <= 1'b1; // dont care
-        oWP_N <= // either or? see datasheet
+        oWP_N <= 1'b1; // CMOS HIGH (Vccq) see datasheet
         <= iRB_N;
 //        <= flash_q;
-        flash_data <=
-        data_oe <= 1'b0; // dont care
-        mode_done <= 1'b1; 
+        flash_data <= IDLEDATA;
         req_core_data <= 1'b0;
         output_dval <= 1'b0;
       end
@@ -203,10 +203,10 @@ always@(posedge clk or negedge rst) begin
         oALE <= 1'b0; // dont care
         oWE_N <= 1'b1; // dont care
         oRE_N <= 1'b1; // dont care
-        oWP_N <= // either or? see datasheet
+        oWP_N <= 1'b1; // CMOS HIGH (Vccq), see datasheet
         <= iRB_N;
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b0; // dont care
         mode_done <= 1'b0; 
         req_core_data <= 1'b0;
@@ -218,10 +218,10 @@ always@(posedge clk or negedge rst) begin
         oALE <= 1'b0; // dont care
         oWE_N <= 1'b1;
         oRE_N <= 1'b1;
-        oWP_N <= // dont care
+        oWP_N <= 1'b1; // dont care
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b0; // dont care 
         mode_done <= 1'b1;
         req_core_data <= 1'b0;
@@ -233,10 +233,10 @@ always@(posedge clk or negedge rst) begin
         oALE <= 1'b0; // dont care
         oWE_N <= 1'b1;
         oRE_N <= 1'b1;
-        oWP_N <= // dont care
+        oWP_N <= 1'b1; // dont care
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b0; // dont care 
         mode_done <= 1'b0;
         req_core_data <= 1'b0;
@@ -341,7 +341,7 @@ always@(posedge clk or negedge rst) begin
         oWP_N <= 1'b1; // dont care
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b1;
         mode_done <= 1'b1;
         req_core_data <= 1'b0;
@@ -356,7 +356,7 @@ always@(posedge clk or negedge rst) begin
         oWP_N <= 1'b1; // dont care
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b1;
         mode_done <= 1'b0;
         req_core_data <= 1'b0;
@@ -371,7 +371,7 @@ always@(posedge clk or negedge rst) begin
         oWP_N <= 1'b1; // dont care
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b1;
         mode_done <= 1'b1;
         req_core_data <= 1'b0;
@@ -386,7 +386,7 @@ always@(posedge clk or negedge rst) begin
         oWP_N <= 1'b1; // dont care
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <=
+        flash_data <= IDLEDATA;
         data_oe <= 1'b1;
         mode_done <= 1'b0;
         req_core_data <= 1'b0;
@@ -401,7 +401,7 @@ always@(posedge clk or negedge rst) begin
         oWP_N <= 1'b0;
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <= 
+        flash_data <=  IDLEDATA;
         data_oe <= 1'b0
         mode_done <= 1'b1;
         req_core_data <= 1'b0;
@@ -416,7 +416,7 @@ always@(posedge clk or negedge rst) begin
         oWP_N <= 1'b0;
         <= iRB_N; 
 //        <= flash_q;
-        flash_data <= 
+        flash_data <= IDLEDATA;
         data_oe <= 1'b0
         mode_done <= 1'b0;
         req_core_data <= 1'b0;
