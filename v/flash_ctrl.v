@@ -5,7 +5,6 @@ module flash_ctrl(
   
   // inout direction variable
   output reg data_oe,
-// inout direction control
   // core side 
   input [7:0] core_data_out, // data coming from core module
   output reg  [7:0] core_data_in, // data going to core module
