@@ -1,2 +1,11 @@
 **/.DS_Store
 **/*.swp
+
+
+# Quartus files
+**/*.bak
+**/*.qsf
+**/*.qpf
+output_files/
+db/
+incremental_db/
