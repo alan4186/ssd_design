@@ -6,6 +6,9 @@
 **/*.bak
 **/*.qsf
 **/*.qpf
+**/*.qws
+**/*.rpt
 output_files/
 db/
 incremental_db/
+simulation/
