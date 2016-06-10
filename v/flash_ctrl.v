@@ -91,7 +91,7 @@ assign flash_rdy = iRB_N;
 
 always@(posedge clk or negedge rst) begin
   if(rst == 1'b0) begin
-    state <= STANDBY_0;
+    state <= WRITE_PROTECT_0;
   end else begin
     case(state)
       STANDBY_0:
@@ -100,7 +100,7 @@ always@(posedge clk or negedge rst) begin
         if(iq_empty)
           state <= STANDBY_0;
         else
-          state <= BUS_IDLE_0; // is this delay needed any more?
+          state <= flash_mode;
       BUS_IDLE_0:
         state <= BUS_IDLE_1; // no data input, dont check c_data_in_rdy
       BUS_IDLE_1:
@@ -205,6 +205,8 @@ always@(posedge clk or negedge rst) begin
 //        <= iRB_N;
 //        <= flash_q;
         flash_data <= IDLEDATA;
+        data_oe <= 1'b0; // dont care
+        mode_done <= 1'b1;
         req_core_data <= 1'b0;
         output_dval <= 1'b0;
       end
@@ -356,7 +358,7 @@ always@(posedge clk or negedge rst) begin
         data_oe <= 1'b1;
         mode_done <= 1'b1;
         req_core_data <= 1'b0;
-        output_dval <= 1'b0;
+        output_dval <= 1'b1;
       end
       DATA_OUTPUT_1: begin
         oCE_N <= 1'b0;
@@ -371,7 +373,7 @@ always@(posedge clk or negedge rst) begin
         data_oe <= 1'b1;
         mode_done <= 1'b0;
         req_core_data <= 1'b0;
-        output_dval <= 1'b1;
+        output_dval <= 1'b0;
       end
       DATA_OUTPUT_END_0: begin
         oCE_N <= 1'b0;
@@ -386,7 +388,7 @@ always@(posedge clk or negedge rst) begin
         data_oe <= 1'b1;
         mode_done <= 1'b1;
         req_core_data <= 1'b0;
-        output_dval <= 1'b0;
+        output_dval <= 1'b1; // set to 1 now, next clock data will be valid
       end
       DATA_OUTPUT_END_1: begin
         oCE_N <= 1'b0;
@@ -401,7 +403,7 @@ always@(posedge clk or negedge rst) begin
         data_oe <= 1'b1;
         mode_done <= 1'b0;
         req_core_data <= 1'b0;
-        output_dval <= 1'b1;
+        output_dval <= 1'b0;
       end
       WRITE_PROTECT_0: begin 
         oCE_N <= 1'b1; // dont care
