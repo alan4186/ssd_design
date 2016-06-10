@@ -1,11 +1,15 @@
-`timescale 1ns/100ps
+`timescale 1ns/10ps
 module flash_ctrl_tb;
 //===========================================================================
 // parameters
 //===========================================================================
 parameter tic = 6.25;
-parameter tictoc = 12.5;
+parameter one_clk = 12.5;
+parameter two_clk = 25;
+parameter three_clk = 37.5;
+parameter four_clk = 50;
 
+parameter IDLEDATA = 8'haa;
 
 //===========================================================================
 // REG and WIRE declaration
@@ -31,6 +35,9 @@ wire oWE_N;
 wire oRE_N;
 wire oWP_N;
 reg iRB_N;
+
+wire [7:0] flash_data;
+reg [7:0] flash_q;
 
 //===========================================================================
 // Device Under Test
@@ -60,28 +67,13 @@ flash_ctrl dut(
   .oRE_N(oRE_N),
   .oWP_N(oWP_N),
   .iRB_N(iRB_N),
+
+  // flash data signals
+  .flash_data(flash_data),
+  .flash_q(flash_q)
+
 );
 
-
-//===========================================================================
-// tasks 
-//===========================================================================
-  
-  // tasks for each fash mode
-  // standby
-  // bus idle
-  // command input
-  // addres input
-  // data input
-  // data output begin
-  // data output end
-  // write protect
-  
-  // these features need verified
-  // repeat counter test
-  // command queue under flow test
-  // data queue under flow test
-  //
 
 //===========================================================================
 // Always blocks
@@ -89,5 +81,101 @@ flash_ctrl dut(
 always
   #tic clk = !clk;
 
+
+//===========================================================================
+// initial blocks 
+//===========================================================================
+
+// apply stumulus
+initial begin
+  // init clock
+  clk = 1'b0;
+  #tic; // to align signals with posedge clk
+  // reset device
+  rst = 1'b1;
+  core_data_out = IDLEDATA;
+  instruction = 32'hffff0000;
+  c_data_in_rdy = 1'b1; // should always be 1 unless fifo is full
+  c_data_out_rdy = 1'b1; // should always be 1 unless fifo is full
+  iq_empty = 1'b0; // should be 0 unluss command queue is empty
+  iRB_N = 1'b1; 
+  core_data_out = IDLEDATA; 
+
+  #two_clk
+  rst = 1'b0;
+
+  #two_clk
+  rst = 1'b1;
+
+
+  // standby
+  $display("Testing Standby at time %d", $time);
+  core_data_out = 8'hff; // arbitrary patern, this should not affect outputs
+  instruction = 32'hffff0000;
+  
+  // bus idle
+  #four_clk // standby goes into bus idle automaticaly
+  $display("Teseting Bus Idle at time %d", $time);
+  instruction = 32'hffff0001;
+
+  // command input
+  #two_clk
+  $display("Teseting Command Input at time %d", $time);
+  instruction = 32'hffff0002;
+  core_data_out = $random; // random command
+
+  // addres input
+  #two_clk
+  $display("Teseting Address Input at time %d", $time);
+  instruction = 32'hffff0003;
+  core_data_out = $random; // random address
+
+  // data input
+  #two_clk
+  $display("Teseting Data Input at time %d", $time);
+  instruction = 32'hffff0004;
+  core_data_out = $random; // random data
+
+  // data output begin
+  #two_clk
+  $display("Testing Data Output at time %d", $time);
+  instruction = 32'hffff0005;
+  core_data_out = IDLEDATA;
+  flash_q = $random;
+
+  // data output end
+  #two_clk
+  $display("Testing Data Output End at time %d", $time);
+  instruction = 32'hffff0006;
+  flash_q = $random;
+
+  // write protect
+  #two_clk
+  $display("Testing Write Protect at time %d", $time);
+  instruction = 32'hffff0007;
+  flash_q = IDLEDATA;
+
+  // set up for repeat test
+  #two_clk
+  $display("Done Testing States");
+  instruction = 32'hffff0001; // idle
+
+  // wait for next ack_mode_read signal
+  #three_clk
+
+  // repeat counter test
+  $display("Testing Repeat counter at time %t", $time);
+  instruction = 32'hffff0043; // repeat Address input 4 more times
+
+  #four_clk
+  #four_clk
+  #four_clk
+  // command queue under flow test
+  // data in queue under flow test
+  // data out queue over flow test
+
+  #100
+  $stop;
+end
 
 endmodule
