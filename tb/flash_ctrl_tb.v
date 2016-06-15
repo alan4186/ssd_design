@@ -171,9 +171,33 @@ initial begin
   #four_clk
   #four_clk
   // command queue under flow test
-  // data in queue under flow test
-  // data out queue over flow test
+  iq_empty = 1'b1;
+  #two_clk
+  instruction = 32'hfff0002;
+  
+  #two_clk
+  iq_empty = 1'b0;
 
+  // data in queue under flow test
+  #two_clk 
+  c_data_in_rdy = 1'b0;
+  
+  #two_clk
+  c_data_in_rdy = 1'b1;
+  
+  // data out queue over flow test
+  #two_clk 
+  instruction = 32'hffff0005;
+
+  #two_clk
+  c_data_out_rdy = 1'b0;
+
+  #two_clk
+  c_data_out_rdy = 1'b1;
+
+  #two_clk
+
+  // end sim
   #100
   $stop;
 end
